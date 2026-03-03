@@ -1,0 +1,1347 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Intellectual Floor · Idea Ranking (Client-Side)</title>
+  <style>
+    :root{
+      --bg:#0b0c10;
+      --card:#111319;
+      --ink:#e9edf1;
+      --muted:#a7b0bb;
+      --line:#252a33;
+      --accent:#7dd3fc;
+      --good:#34d399;
+      --warn:#fbbf24;
+      --bad:#fb7185;
+      --chip:#151925;
+      --shadow: 0 10px 28px rgba(0,0,0,.35);
+      --radius:16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--ink);
+      background:
+        radial-gradient(1200px 600px at 20% -10%, rgba(125,211,252,.18), transparent 60%),
+        radial-gradient(900px 500px at 90% 10%, rgba(52,211,153,.10), transparent 55%),
+        var(--bg);
+      min-height:100vh;
+    }
+    header{
+      padding:22px 18px 10px;
+      max-width:1200px;
+      margin:0 auto;
+    }
+    .title{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    h1{
+      margin:0;
+      font-size:20px;
+      letter-spacing:.2px;
+      font-weight:650;
+    }
+    .subtitle{
+      margin-top:6px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.4;
+      max-width:720px;
+    }
+    .top-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    button, .btn{
+      appearance:none;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      color:var(--ink);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      box-shadow: none;
+      font-size:13px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    button:hover{border-color:#334155}
+    button:active{transform:translateY(1px)}
+    .btn-primary{
+      border-color:rgba(125,211,252,.35);
+      background:linear-gradient(180deg, rgba(125,211,252,.18), rgba(125,211,252,.06));
+    }
+    .btn-danger{
+      border-color:rgba(251,113,133,.35);
+      background:linear-gradient(180deg, rgba(251,113,133,.16), rgba(251,113,133,.06));
+    }
+    main{
+      max-width:1200px;
+      margin:0 auto;
+      padding:8px 18px 28px;
+      display:grid;
+      gap:14px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 1040px){
+      main{grid-template-columns: 420px 1fr;}
+    }
+    .card{
+      background:rgba(17,19,25,.82);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding:14px 14px 10px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:10px;
+    }
+    .card .hd h2{
+      margin:0;
+      font-size:14px;
+      font-weight:650;
+      letter-spacing:.2px;
+    }
+    .card .hd p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
+    }
+    .card .bd{padding:14px}
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .field{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-bottom:12px;
+    }
+    label{
+      font-size:12px;
+      color:var(--muted);
+    }
+    input[type="text"], textarea, select, input[type="number"]{
+      width:100%;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--ink);
+      padding:10px 10px;
+      border-radius:12px;
+      outline:none;
+      font-size:13px;
+    }
+    textarea{min-height:70px; resize:vertical}
+    .grid2{display:grid; gap:10px; grid-template-columns:1fr 1fr}
+    .grid3{display:grid; gap:10px; grid-template-columns:1fr 1fr 1fr}
+    .help{
+      font-size:11px;
+      color:var(--muted);
+      line-height:1.35;
+      margin-top:4px;
+    }
+    .criteria{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .crit{
+      padding:10px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(255,255,255,.02);
+    }
+    .crit-top{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .crit-name{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 220px;
+      flex:1;
+    }
+    .pill{
+      font-family:var(--mono);
+      font-size:11px;
+      color:rgba(233,237,241,.9);
+      padding:4px 8px;
+      border-radius:999px;
+      background:rgba(125,211,252,.10);
+      border:1px solid rgba(125,211,252,.18);
+      white-space:nowrap;
+    }
+    .pill.rev{
+      background:rgba(251,191,36,.12);
+      border-color:rgba(251,191,36,.20);
+    }
+    .pill.wt{
+      background:rgba(52,211,153,.10);
+      border-color:rgba(52,211,153,.18);
+    }
+    .crit-actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .tiny{
+      padding:8px 10px;
+      font-size:12px;
+      border-radius:12px;
+    }
+    .ideas{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .idea{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:rgba(255,255,255,.02);
+      overflow:hidden;
+    }
+    .idea-hd{
+      padding:12px 12px 10px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      border-bottom:1px solid var(--line);
+    }
+    .idea-title{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width:220px;
+      flex:1;
+    }
+    .idea-title strong{
+      font-size:14px;
+      font-weight:650;
+      letter-spacing:.2px;
+    }
+    .idea-title span{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
+    }
+    .idea-meta{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      align-items:flex-end;
+    }
+    .score{
+      font-family:var(--mono);
+      font-size:13px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(21,25,37,.8);
+      white-space:nowrap;
+    }
+    .score.good{border-color:rgba(52,211,153,.25)}
+    .score.warn{border-color:rgba(251,191,36,.25)}
+    .score.bad{border-color:rgba(251,113,133,.25)}
+    .idea-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .sliders{
+      padding:12px;
+      display:grid;
+      gap:10px;
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 720px){
+      .sliders{grid-template-columns: 1fr 1fr;}
+    }
+    .slider{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(255,255,255,.02);
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .slider-top{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+    .slider-top .name{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:12px;
+      color:var(--muted);
+      flex-wrap:wrap;
+    }
+    .slider-top .val{
+      font-family:var(--mono);
+      font-size:12px;
+      padding:4px 8px;
+      border-radius:10px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      white-space:nowrap;
+    }
+    input[type="range"]{
+      width:100%;
+    }
+    .dashboard{
+      display:grid;
+      gap:12px;
+      grid-template-columns:1fr;
+    }
+    @media (min-width: 720px){
+      .dashboard{grid-template-columns:1fr 1fr;}
+    }
+    .stat{
+      padding:12px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:rgba(255,255,255,.02);
+    }
+    .stat .k{
+      color:var(--muted);
+      font-size:12px;
+    }
+    .stat .v{
+      margin-top:6px;
+      font-family:var(--mono);
+      font-size:16px;
+    }
+    .bar{
+      height:10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      overflow:hidden;
+      border:1px solid var(--line);
+      margin-top:10px;
+    }
+    .bar > div{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg, rgba(125,211,252,.7), rgba(52,211,153,.7));
+    }
+    .note{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.4;
+    }
+    .footer{
+      max-width:1200px;
+      margin:0 auto;
+      padding:0 18px 26px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.45;
+    }
+    .mono{font-family:var(--mono)}
+    .sep{height:1px; background:var(--line); margin:12px 0}
+    .hidden{display:none!important}
+    a{color:var(--accent); text-decoration:none}
+    a:hover{text-decoration:underline}
+    .kbd{
+      font-family:var(--mono);
+      font-size:11px;
+      padding:3px 7px;
+      border:1px solid var(--line);
+      border-bottom-color:#1f2937;
+      background:rgba(255,255,255,.03);
+      border-radius:8px;
+      color:rgba(233,237,241,.9);
+      white-space:nowrap;
+    }
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      transform:translateX(-50%);
+      background:rgba(17,19,25,.92);
+      border:1px solid var(--line);
+      padding:10px 12px;
+      border-radius:14px;
+      box-shadow:var(--shadow);
+      color:var(--ink);
+      font-size:13px;
+      max-width:min(720px, calc(100vw - 24px));
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .toast .dot{
+      width:9px; height:9px; border-radius:50%;
+      background:var(--good);
+      box-shadow:0 0 0 6px rgba(52,211,153,.14);
+      flex:0 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">
+      <div>
+        <h1>Intellectual Floor · Idea Ranking</h1>
+        <div class="subtitle">
+          A client-side scoring app for solo builders. Define criteria. Score ideas 1–10. Auto-rank. Compute your Intellectual Floor, then generate stronger alternatives.
+          Works offline. Stores everything locally in your browser.
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="btn-primary" id="btnAddIdea" title="Add a new idea (Ctrl/⌘ + Enter from the form)">➕ Add Idea</button>
+        <button id="btnExport" title="Export JSON backup">⬇ Export</button>
+        <label class="btn" for="importFile" title="Import JSON backup">⬆ Import</label>
+        <input id="importFile" type="file" accept="application/json" class="hidden" />
+        <button class="btn-danger" id="btnReset" title="Reset app (clears local storage)">🗑 Reset</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Left: Setup -->
+    <section class="card">
+      <div class="hd">
+        <div>
+          <h2>Setup</h2>
+          <p>Customize criteria. Optionally add weights. Complexity is reverse-scored by default.</p>
+        </div>
+      </div>
+      <div class="bd">
+        <div class="field">
+          <label for="projectContext">Hackathon context</label>
+          <textarea id="projectContext" placeholder="Example: Weekend client-side web apps using an open data portal. Solo builder, limited advanced coding time."></textarea>
+          <div class="help">This is used to generate better next ideas and keeps scoring aligned to reality.</div>
+        </div>
+
+        <div class="field">
+          <label>Scoring method</label>
+          <div class="row">
+            <select id="scoreMode">
+              <option value="simple">Simple average (7 criteria)</option>
+              <option value="weighted">Weighted average</option>
+            </select>
+            <select id="floorRule">
+              <option value="minus05">Floor = Top Score − 0.5</option>
+              <option value="minus10">Floor = Top Score − 1.0</option>
+              <option value="p90">Floor = 90th percentile</option>
+            </select>
+          </div>
+          <div class="help">Weighted mode helps when feasibility matters more for solo builders.</div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="criteria" id="criteriaList"></div>
+
+        <div class="row" style="margin-top:12px">
+          <button id="btnAddCriterion" class="tiny">➕ Add Criterion</button>
+          <button id="btnRestoreDefaults" class="tiny">↩ Restore Defaults</button>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="field">
+          <label for="ideaName">New idea</label>
+          <input id="ideaName" type="text" placeholder="Idea name" />
+        </div>
+        <div class="field">
+          <label for="ideaDesc">One-line thesis</label>
+          <textarea id="ideaDesc" placeholder="What it does. Who it's for. Why it matters."></textarea>
+          <div class="help">Tip: keep it falsifiable. This helps you score consistently.</div>
+        </div>
+        <div class="row">
+          <button class="btn-primary" id="btnCreateIdea">Add idea to list</button>
+          <button id="btnFillSample">Fill sample ideas</button>
+        </div>
+        <div class="help" style="margin-top:10px">
+          Keyboard: <span class="kbd">Ctrl</span>/<span class="kbd">⌘</span> + <span class="kbd">Enter</span> to add an idea when focused in the thesis box.
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: Dashboard & Ideas -->
+    <section class="card">
+      <div class="hd">
+        <div>
+          <h2>Ranked Ideas</h2>
+          <p>Score each idea 1–10 per criterion. The app ranks them automatically.</p>
+        </div>
+        <div class="row">
+          <button id="btnSort" class="tiny" title="Re-sort by score">↕ Sort</button>
+          <button id="btnCopyPrompt" class="tiny" title="Copy AI prompt for generating better ideas">📋 Copy Upgrade Prompt</button>
+        </div>
+      </div>
+
+      <div class="bd">
+        <div class="dashboard">
+          <div class="stat">
+            <div class="k">Top score</div>
+            <div class="v" id="topScore">-</div>
+            <div class="bar"><div id="topBar"></div></div>
+            <div class="note" id="topIdeaName">Add ideas and score them to see your leader.</div>
+          </div>
+          <div class="stat">
+            <div class="k">Intellectual Floor</div>
+            <div class="v" id="floorScore">-</div>
+            <div class="bar"><div id="floorBar"></div></div>
+            <div class="note" id="floorNote">Anything below the floor is not acceptable to build next.</div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="ideas" id="ideasList"></div>
+
+        <div class="sep"></div>
+
+        <div class="note">
+          Scoring tip: be consistent. Score the same way for every idea. If you are uncertain, score lower, then write what would increase the score in the idea notes.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="footer">
+    <div class="mono">Data storage:</div>
+    Everything is stored in <span class="mono">localStorage</span> only. Export JSON for backup. No network calls. Perfect for hackathons and demos.
+  </div>
+
+  <div id="toast" class="toast hidden" role="status" aria-live="polite">
+    <div class="dot"></div>
+    <div id="toastMsg">Copied.</div>
+  </div>
+
+  <script>
+    // Intellectual Floor · Client-side Scoring App
+    // - No dependencies
+    // - localStorage persistence
+    // - Export / Import JSON
+    // - Weighted or simple scoring
+    // - Reverse score for "Complexity" criteria by default
+
+    const LS_KEY = "intellectual_floor_app_v1";
+
+    const DEFAULT_CRITERIA = [
+      { id: uid(), name: "Technical Feasibility", desc: "Can you build it with your tools, time, and current skill", weight: 1.5, reverse: false },
+      { id: uid(), name: "Market Demand", desc: "Do people actively want this or search for it", weight: 1.2, reverse: false },
+      { id: uid(), name: "Differentiation", desc: "How distinct it is from existing solutions", weight: 1.0, reverse: false },
+      { id: uid(), name: "Monetization Clarity", desc: "Is there a clear path to revenue or value capture", weight: 1.0, reverse: false },
+      { id: uid(), name: "Execution Complexity", desc: "Operational heaviness. Higher means harder", weight: 1.2, reverse: true },
+      { id: uid(), name: "Strategic Leverage", desc: "Does it unlock future products, authority, or platform advantage", weight: 1.0, reverse: false },
+      { id: uid(), name: "Personal Motivation", desc: "Would you actually enjoy building and iterating on it", weight: 1.0, reverse: false },
+    ];
+
+    const DEFAULT_STATE = {
+      projectContext: "Weekend hackathon. Solo builder. Client-side web apps only. Limited advanced coding time.",
+      scoreMode: "weighted",
+      floorRule: "minus05",
+      criteria: DEFAULT_CRITERIA,
+      ideas: []
+    };
+
+    let state = load() || structuredClone(DEFAULT_STATE);
+
+    // ---------- Utilities ----------
+    function uid(){
+      return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16);
+    }
+    function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+    function round1(n){ return Math.round(n * 10) / 10; }
+    function safeText(s){ return (s ?? "").toString(); }
+
+    function toast(msg){
+      const el = document.getElementById("toast");
+      const msgEl = document.getElementById("toastMsg");
+      msgEl.textContent = msg;
+      el.classList.remove("hidden");
+      window.clearTimeout(toast._t);
+      toast._t = window.setTimeout(() => el.classList.add("hidden"), 1600);
+    }
+
+    function save(){
+      localStorage.setItem(LS_KEY, JSON.stringify(state));
+    }
+    function load(){
+      try{
+        const raw = localStorage.getItem(LS_KEY);
+        if(!raw) return null;
+        const parsed = JSON.parse(raw);
+        return migrate(parsed);
+      }catch{
+        return null;
+      }
+    }
+
+    // Basic migration safety for future tweaks
+    function migrate(s){
+      if(!s || typeof s !== "object") return null;
+      if(!Array.isArray(s.criteria) || s.criteria.length === 0){
+        s.criteria = structuredClone(DEFAULT_CRITERIA);
+      }
+      if(!Array.isArray(s.ideas)) s.ideas = [];
+      if(!s.scoreMode) s.scoreMode = "simple";
+      if(!s.floorRule) s.floorRule = "minus05";
+      if(!s.projectContext) s.projectContext = DEFAULT_STATE.projectContext;
+
+      // Ensure each criterion has required fields
+      s.criteria = s.criteria.map(c => ({
+        id: c.id || uid(),
+        name: c.name || "Criterion",
+        desc: c.desc || "",
+        weight: typeof c.weight === "number" ? c.weight : 1.0,
+        reverse: !!c.reverse
+      }));
+
+      // Ensure each idea has scores for each criterion
+      s.ideas = s.ideas.map(i => {
+        const scores = i.scores && typeof i.scores === "object" ? i.scores : {};
+        for(const c of s.criteria){
+          if(typeof scores[c.id] !== "number") scores[c.id] = 5;
+        }
+        return {
+          id: i.id || uid(),
+          name: i.name || "Untitled idea",
+          desc: i.desc || "",
+          notes: i.notes || "",
+          scores
+        };
+      });
+
+      return s;
+    }
+
+    // ---------- Scoring ----------
+    function computeIdeaScore(idea){
+      const criteria = state.criteria;
+      let total = 0;
+      let denom = 0;
+
+      for(const c of criteria){
+        let v = Number(idea.scores?.[c.id] ?? 5);
+        v = clamp(v, 1, 10);
+        const effective = c.reverse ? (11 - v) : v; // reverse score
+        if(state.scoreMode === "weighted"){
+          const w = clamp(Number(c.weight ?? 1), 0, 10);
+          total += effective * w;
+          denom += w;
+        } else {
+          total += effective;
+          denom += 1;
+        }
+      }
+      if(denom === 0) return 0;
+      return total / denom;
+    }
+
+    function scoreClass(n){
+      if(n >= 8) return "good";
+      if(n >= 7) return "warn";
+      return "bad";
+    }
+
+    function getRankedIdeas(){
+      const list = state.ideas.map(i => ({
+        ...i,
+        _score: computeIdeaScore(i)
+      }));
+      list.sort((a,b) => b._score - a._score);
+      return list;
+    }
+
+    function computeFloor(ranked){
+      if(!ranked.length) return { top: null, floor: null };
+      const scores = ranked.map(r => r._score).sort((a,b)=>a-b);
+      const top = ranked[0]._score;
+
+      let floor = null;
+      switch(state.floorRule){
+        case "minus10": floor = top - 1.0; break;
+        case "p90":
+          // 90th percentile (nearest-rank)
+          const idx = Math.max(0, Math.ceil(0.9 * scores.length) - 1);
+          floor = scores[idx];
+          break;
+        case "minus05":
+        default: floor = top - 0.5; break;
+      }
+      floor = clamp(floor, 0, 10);
+      return { top, floor };
+    }
+
+    // ---------- Rendering ----------
+    const elCriteriaList = document.getElementById("criteriaList");
+    const elIdeasList = document.getElementById("ideasList");
+
+    function render(){
+      // Setup fields
+      document.getElementById("projectContext").value = state.projectContext;
+      document.getElementById("scoreMode").value = state.scoreMode;
+      document.getElementById("floorRule").value = state.floorRule;
+
+      renderCriteria();
+      renderIdeasAndDashboard();
+      save();
+    }
+
+    function renderCriteria(){
+      elCriteriaList.innerHTML = "";
+      state.criteria.forEach((c, idx) => {
+        const wrap = document.createElement("div");
+        wrap.className = "crit";
+
+        const top = document.createElement("div");
+        top.className = "crit-top";
+
+        const left = document.createElement("div");
+        left.className = "crit-name";
+
+        const name = document.createElement("input");
+        name.type = "text";
+        name.value = c.name;
+        name.placeholder = "Criterion name";
+        name.addEventListener("input", () => {
+          c.name = name.value;
+          renderIdeasAndDashboard();
+          save();
+        });
+
+        const badge = document.createElement("span");
+        badge.className = "pill" + (c.reverse ? " rev" : "");
+        badge.textContent = c.reverse ? "reverse" : "normal";
+
+        left.appendChild(name);
+        left.appendChild(badge);
+
+        const actions = document.createElement("div");
+        actions.className = "crit-actions";
+
+        const weight = document.createElement("input");
+        weight.type = "number";
+        weight.min = "0";
+        weight.max = "10";
+        weight.step = "0.1";
+        weight.value = c.weight;
+        weight.style.width = "90px";
+        weight.title = "Weight (used in weighted mode)";
+        weight.addEventListener("input", () => {
+          c.weight = clamp(Number(weight.value || 0), 0, 10);
+          renderIdeasAndDashboard();
+          save();
+        });
+
+        const weightBadge = document.createElement("span");
+        weightBadge.className = "pill wt";
+        weightBadge.textContent = "w";
+
+        const toggle = document.createElement("button");
+        toggle.className = "tiny";
+        toggle.textContent = c.reverse ? "Make normal" : "Make reverse";
+        toggle.title = "Reverse scoring means higher input becomes lower effective score";
+        toggle.addEventListener("click", () => {
+          c.reverse = !c.reverse;
+          render();
+        });
+
+        const del = document.createElement("button");
+        del.className = "tiny";
+        del.textContent = "Delete";
+        del.addEventListener("click", () => {
+          if(state.criteria.length <= 3){
+            toast("Keep at least 3 criteria.");
+            return;
+          }
+          // Remove from criteria, and remove scores from ideas
+          state.criteria = state.criteria.filter(x => x.id !== c.id);
+          for(const idea of state.ideas){
+            delete idea.scores[c.id];
+          }
+          // Ensure all ideas have scores for remaining criteria
+          for(const idea of state.ideas){
+            for(const crit of state.criteria){
+              if(typeof idea.scores[crit.id] !== "number") idea.scores[crit.id] = 5;
+            }
+          }
+          render();
+        });
+
+        actions.appendChild(weightBadge);
+        actions.appendChild(weight);
+        actions.appendChild(toggle);
+        actions.appendChild(del);
+
+        const desc = document.createElement("textarea");
+        desc.value = c.desc;
+        desc.placeholder = "What does this criterion mean. How to score it.";
+        desc.addEventListener("input", () => {
+          c.desc = desc.value;
+          save();
+        });
+
+        top.appendChild(left);
+        top.appendChild(actions);
+
+        wrap.appendChild(top);
+        wrap.appendChild(desc);
+
+        // Small reorder buttons
+        const reorder = document.createElement("div");
+        reorder.className = "row";
+        reorder.style.marginTop = "10px";
+
+        const up = document.createElement("button");
+        up.className = "tiny";
+        up.textContent = "↑";
+        up.title = "Move up";
+        up.disabled = idx === 0;
+        up.addEventListener("click", () => {
+          if(idx === 0) return;
+          const copy = state.criteria.slice();
+          const t = copy[idx-1];
+          copy[idx-1] = copy[idx];
+          copy[idx] = t;
+          state.criteria = copy;
+          render();
+        });
+
+        const down = document.createElement("button");
+        down.className = "tiny";
+        down.textContent = "↓";
+        down.title = "Move down";
+        down.disabled = idx === state.criteria.length - 1;
+        down.addEventListener("click", () => {
+          if(idx === state.criteria.length - 1) return;
+          const copy = state.criteria.slice();
+          const t = copy[idx+1];
+          copy[idx+1] = copy[idx];
+          copy[idx] = t;
+          state.criteria = copy;
+          render();
+        });
+
+        reorder.appendChild(up);
+        reorder.appendChild(down);
+        wrap.appendChild(reorder);
+
+        elCriteriaList.appendChild(wrap);
+      });
+    }
+
+    function renderIdeasAndDashboard(){
+      const ranked = getRankedIdeas();
+      const { top, floor } = computeFloor(ranked);
+
+      // Dashboard
+      const elTopScore = document.getElementById("topScore");
+      const elTopBar = document.getElementById("topBar");
+      const elTopIdeaName = document.getElementById("topIdeaName");
+
+      const elFloorScore = document.getElementById("floorScore");
+      const elFloorBar = document.getElementById("floorBar");
+      const elFloorNote = document.getElementById("floorNote");
+
+      if(!ranked.length){
+        elTopScore.textContent = "-";
+        elTopBar.style.width = "0%";
+        elTopIdeaName.textContent = "Add ideas and score them to see your leader.";
+
+        elFloorScore.textContent = "-";
+        elFloorBar.style.width = "0%";
+        elFloorNote.textContent = "Anything below the floor is not acceptable to build next.";
+      }else{
+        elTopScore.textContent = round1(top).toFixed(1) + " / 10";
+        elTopBar.style.width = (top * 10) + "%";
+        elTopIdeaName.textContent = "Leader: " + ranked[0].name;
+
+        elFloorScore.textContent = round1(floor).toFixed(1) + " / 10";
+        elFloorBar.style.width = (floor * 10) + "%";
+        elFloorNote.textContent = floorNoteText(floor);
+      }
+
+      // Ideas list
+      elIdeasList.innerHTML = "";
+      ranked.forEach((idea, rankIdx) => {
+        const wrap = document.createElement("div");
+        wrap.className = "idea";
+
+        const hd = document.createElement("div");
+        hd.className = "idea-hd";
+
+        const title = document.createElement("div");
+        title.className = "idea-title";
+
+        const strong = document.createElement("strong");
+        strong.textContent = `#${rankIdx+1} · ${idea.name}`;
+
+        const span = document.createElement("span");
+        span.textContent = idea.desc || "No thesis yet.";
+
+        title.appendChild(strong);
+        title.appendChild(span);
+
+        const meta = document.createElement("div");
+        meta.className = "idea-meta";
+
+        const s = document.createElement("div");
+        const sc = computeIdeaScore(idea);
+        s.className = "score " + scoreClass(sc);
+        s.textContent = round1(sc).toFixed(1);
+
+        const actions = document.createElement("div");
+        actions.className = "idea-actions";
+
+        const btnNotes = document.createElement("button");
+        btnNotes.className = "tiny";
+        btnNotes.textContent = "Notes";
+        btnNotes.addEventListener("click", () => {
+          const newNotes = prompt("Notes (what would raise the score. constraints. risks).", idea.notes || "");
+          if(newNotes !== null){
+            const ref = state.ideas.find(x => x.id === idea.id);
+            ref.notes = newNotes;
+            save();
+            toast("Saved notes.");
+          }
+        });
+
+        const btnDup = document.createElement("button");
+        btnDup.className = "tiny";
+        btnDup.textContent = "Duplicate";
+        btnDup.addEventListener("click", () => {
+          const copy = {
+            id: uid(),
+            name: idea.name + " (copy)",
+            desc: idea.desc,
+            notes: idea.notes,
+            scores: structuredClone(idea.scores)
+          };
+          state.ideas.push(copy);
+          render();
+          toast("Duplicated.");
+        });
+
+        const btnDel = document.createElement("button");
+        btnDel.className = "tiny";
+        btnDel.textContent = "Delete";
+        btnDel.addEventListener("click", () => {
+          if(!confirm(`Delete "${idea.name}"?`)) return;
+          state.ideas = state.ideas.filter(x => x.id !== idea.id);
+          render();
+          toast("Deleted.");
+        });
+
+        actions.appendChild(btnNotes);
+        actions.appendChild(btnDup);
+        actions.appendChild(btnDel);
+
+        meta.appendChild(s);
+        meta.appendChild(actions);
+
+        hd.appendChild(title);
+        hd.appendChild(meta);
+
+        const sliders = document.createElement("div");
+        sliders.className = "sliders";
+
+        // Build sliders for each criterion
+        state.criteria.forEach(c => {
+          const box = document.createElement("div");
+          box.className = "slider";
+
+          const topRow = document.createElement("div");
+          topRow.className = "slider-top";
+
+          const name = document.createElement("div");
+          name.className = "name";
+          const label = document.createElement("span");
+          label.textContent = c.name;
+          const small = document.createElement("span");
+          small.className = "pill" + (c.reverse ? " rev" : "");
+          small.textContent = c.reverse ? "reverse" : "normal";
+          name.appendChild(label);
+          name.appendChild(small);
+
+          const val = document.createElement("div");
+          val.className = "val";
+          const cur = clamp(Number(idea.scores[c.id] ?? 5), 1, 10);
+          val.textContent = cur;
+
+          const range = document.createElement("input");
+          range.type = "range";
+          range.min = "1";
+          range.max = "10";
+          range.step = "1";
+          range.value = cur;
+          range.addEventListener("input", () => {
+            const v = Number(range.value);
+            val.textContent = v;
+            const ref = state.ideas.find(x => x.id === idea.id);
+            ref.scores[c.id] = v;
+            // Update score chip live
+            const newScore = computeIdeaScore(ref);
+            s.textContent = round1(newScore).toFixed(1);
+            s.className = "score " + scoreClass(newScore);
+            // Also refresh dashboard quickly
+            refreshDashboardOnly();
+            save();
+          });
+
+          const hint = document.createElement("div");
+          hint.className = "help";
+          hint.textContent = c.desc ? c.desc : "Add a description for consistent scoring.";
+
+          topRow.appendChild(name);
+          topRow.appendChild(val);
+
+          box.appendChild(topRow);
+          box.appendChild(range);
+          box.appendChild(hint);
+
+          sliders.appendChild(box);
+        });
+
+        wrap.appendChild(hd);
+        wrap.appendChild(sliders);
+
+        // Floor marker
+        if(floor !== null){
+          const score = computeIdeaScore(idea);
+          if(score < floor){
+            wrap.style.borderColor = "rgba(251,113,133,.25)";
+          }else{
+            wrap.style.borderColor = "rgba(52,211,153,.22)";
+          }
+        }
+
+        elIdeasList.appendChild(wrap);
+      });
+    }
+
+    function refreshDashboardOnly(){
+      const ranked = getRankedIdeas();
+      const { top, floor } = computeFloor(ranked);
+
+      const elTopScore = document.getElementById("topScore");
+      const elTopBar = document.getElementById("topBar");
+      const elTopIdeaName = document.getElementById("topIdeaName");
+
+      const elFloorScore = document.getElementById("floorScore");
+      const elFloorBar = document.getElementById("floorBar");
+      const elFloorNote = document.getElementById("floorNote");
+
+      if(!ranked.length){
+        elTopScore.textContent = "-";
+        elTopBar.style.width = "0%";
+        elTopIdeaName.textContent = "Add ideas and score them to see your leader.";
+
+        elFloorScore.textContent = "-";
+        elFloorBar.style.width = "0%";
+        elFloorNote.textContent = "Anything below the floor is not acceptable to build next.";
+      }else{
+        elTopScore.textContent = round1(top).toFixed(1) + " / 10";
+        elTopBar.style.width = (top * 10) + "%";
+        elTopIdeaName.textContent = "Leader: " + ranked[0].name;
+
+        elFloorScore.textContent = round1(floor).toFixed(1) + " / 10";
+        elFloorBar.style.width = (floor * 10) + "%";
+        elFloorNote.textContent = floorNoteText(floor);
+      }
+    }
+
+    function floorNoteText(floor){
+      const rule = document.getElementById("floorRule")?.value || state.floorRule;
+      if(rule === "p90"){
+        return "Floor is set to the 90th percentile score. Only top-tier ideas qualify.";
+      }
+      if(rule === "minus10"){
+        return "Floor is top score minus 1.0. Only ideas close to the leader qualify.";
+      }
+      return "Floor is top score minus 0.5. Build only ideas that clear this bar.";
+    }
+
+    // ---------- Actions ----------
+    document.getElementById("projectContext").addEventListener("input", (e) => {
+      state.projectContext = e.target.value;
+      save();
+    });
+
+    document.getElementById("scoreMode").addEventListener("change", (e) => {
+      state.scoreMode = e.target.value;
+      render();
+    });
+
+    document.getElementById("floorRule").addEventListener("change", (e) => {
+      state.floorRule = e.target.value;
+      renderIdeasAndDashboard();
+      save();
+    });
+
+    document.getElementById("btnAddCriterion").addEventListener("click", () => {
+      state.criteria.push({
+        id: uid(),
+        name: "New Criterion",
+        desc: "Define what this means and how to score it.",
+        weight: 1.0,
+        reverse: false
+      });
+      // Add default score to each idea
+      for(const idea of state.ideas){
+        idea.scores[state.criteria[state.criteria.length - 1].id] = 5;
+      }
+      render();
+      toast("Added criterion.");
+    });
+
+    document.getElementById("btnRestoreDefaults").addEventListener("click", () => {
+      if(!confirm("Restore default criteria? This will overwrite your current criteria list.")) return;
+      const oldIds = new Set(state.criteria.map(c => c.id));
+      state.criteria = structuredClone(DEFAULT_CRITERIA);
+
+      // Rebuild idea scores to match new criteria, carry over by name match where possible
+      for(const idea of state.ideas){
+        const newScores = {};
+        for(const c of state.criteria){
+          // Try to reuse an existing score from any old criterion with same name
+          const matchOld = [...oldIds].find(() => false);
+          newScores[c.id] = 5;
+        }
+        // Better: map by previous criterion names
+        // Build old name->value
+        const oldMap = {};
+        for(const oc of (load()?.criteria || [])){
+          oldMap[oc.name] = oc.id;
+        }
+        for(const c of state.criteria){
+          const oldId = oldMap[c.name];
+          if(oldId && typeof idea.scores[oldId] === "number"){
+            newScores[c.id] = idea.scores[oldId];
+          }
+        }
+        idea.scores = newScores;
+      }
+
+      render();
+      toast("Restored defaults.");
+    });
+
+    document.getElementById("btnCreateIdea").addEventListener("click", createIdeaFromForm);
+    document.getElementById("btnAddIdea").addEventListener("click", createIdeaFromForm);
+
+    function createIdeaFromForm(){
+      const name = safeText(document.getElementById("ideaName").value).trim();
+      const desc = safeText(document.getElementById("ideaDesc").value).trim();
+
+      if(!name){
+        toast("Add an idea name.");
+        return;
+      }
+
+      const scores = {};
+      for(const c of state.criteria){
+        scores[c.id] = 5;
+      }
+
+      state.ideas.push({
+        id: uid(),
+        name,
+        desc,
+        notes: "",
+        scores
+      });
+
+      document.getElementById("ideaName").value = "";
+      document.getElementById("ideaDesc").value = "";
+
+      renderIdeasAndDashboard();
+      save();
+      toast("Added idea.");
+    }
+
+    document.getElementById("ideaDesc").addEventListener("keydown", (e) => {
+      const isMac = navigator.platform.toUpperCase().includes("MAC");
+      if((isMac ? e.metaKey : e.ctrlKey) && e.key === "Enter"){
+        e.preventDefault();
+        createIdeaFromForm();
+      }
+    });
+
+    document.getElementById("btnFillSample").addEventListener("click", () => {
+      const samples = [
+        {
+          name: "OpenData Weekend Dashboard",
+          desc: "Paste an open data dataset URL, auto-generate a clean dashboard with filters and shareable insights."
+        },
+        {
+          name: "Permit Pulse",
+          desc: "A lightweight tool that alerts residents when new permits are filed nearby using open data feeds."
+        },
+        {
+          name: "Accessibility Route Planner",
+          desc: "Map-based route planner that avoids steep grades or missing sidewalk segments using municipal GIS layers."
+        },
+        {
+          name: "Local Grant Finder",
+          desc: "Searchable grant/opportunity board that matches users to local programs and deadlines from open data."
+        },
+        {
+          name: "Neighborhood Heat Map Stories",
+          desc: "Turns data into 3-shareable story cards with charts and plain-language takeaways for social sharing."
+        }
+      ];
+      for(const s of samples){
+        const scores = {};
+        for(const c of state.criteria) scores[c.id] = 5;
+        state.ideas.push({ id: uid(), name: s.name, desc: s.desc, notes:"", scores });
+      }
+      render();
+      toast("Added sample ideas.");
+    });
+
+    document.getElementById("btnSort").addEventListener("click", () => {
+      // Sorting is computed view-only, but we can re-order underlying list to match ranking for a calmer UX.
+      const ranked = getRankedIdeas();
+      state.ideas = ranked.map(r => {
+        const copy = structuredClone(r);
+        delete copy._score;
+        return copy;
+      });
+      render();
+      toast("Sorted by score.");
+    });
+
+    document.getElementById("btnCopyPrompt").addEventListener("click", async () => {
+      const ranked = getRankedIdeas();
+      if(!ranked.length){
+        toast("Add and score at least one idea first.");
+        return;
+      }
+      const { top, floor } = computeFloor(ranked);
+
+      const criteria = state.criteria.map(c => {
+        const mode = c.reverse ? "reverse (higher input is worse)" : "normal";
+        const wt = state.scoreMode === "weighted" ? `, weight ${round1(c.weight)}` : "";
+        return `- ${c.name} (1–10, ${mode}${wt}): ${c.desc || "no description"}`;
+      }).join("\n");
+
+      const topIdea = ranked[0];
+      const below = ranked.filter(x => x._score < floor).slice(0, 3).map(x => `- ${x.name}: ${round1(x._score)}`).join("\n") || "None";
+
+      const prompt =
+`You are my hackathon idea generator. I am a solo builder, building client-side web apps only (HTML/JS/CSS). No backend required.
+
+Context:
+${state.projectContext || "(none provided)"}
+
+My current best idea is:
+- ${topIdea.name}
+- Thesis: ${topIdea.desc || "(no thesis)"}
+- Score: ${round1(top).toFixed(1)} / 10
+
+My Intellectual Floor is: ${round1(floor).toFixed(1)} / 10.
+Any new ideas must realistically score ABOVE that floor.
+
+Scoring criteria:
+${criteria}
+
+Ideas currently below the floor (avoid repeating these patterns):
+${below}
+
+Task:
+Generate 7 new idea options that would score above the floor.
+For each idea:
+1) Name
+2) One-sentence thesis
+3) Who it helps
+4) Why it is differentiated
+5) What data it uses (assume open data is available)
+6) A 1–2 day MVP scope (must be buildable client-side)
+7) A guessed score breakdown (1–10 per criterion)`;
+
+      try{
+        await navigator.clipboard.writeText(prompt);
+        toast("Upgrade prompt copied.");
+      }catch{
+        toast("Copy failed. Your browser may block clipboard access.");
+      }
+    });
+
+    document.getElementById("btnExport").addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "intellectual-floor-export.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast("Exported JSON.");
+    });
+
+    document.getElementById("importFile").addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      if(!file) return;
+      try{
+        const text = await file.text();
+        const imported = JSON.parse(text);
+        const migrated = migrate(imported);
+        if(!migrated) throw new Error("Invalid file");
+        state = migrated;
+        render();
+        toast("Imported.");
+      }catch(err){
+        toast("Import failed. Check JSON file format.");
+      }finally{
+        e.target.value = "";
+      }
+    });
+
+    document.getElementById("btnReset").addEventListener("click", () => {
+      if(!confirm("Reset everything? This clears your browser-stored data.")) return;
+      localStorage.removeItem(LS_KEY);
+      state = structuredClone(DEFAULT_STATE);
+      render();
+      toast("Reset complete.");
+    });
+
+    // Initial hydration: ensure all ideas have scores for all criteria
+    (function ensureScores(){
+      for(const idea of state.ideas){
+        idea.scores = idea.scores || {};
+        for(const c of state.criteria){
+          if(typeof idea.scores[c.id] !== "number") idea.scores[c.id] = 5;
+        }
+      }
+      save();
+    })();
+
+    render();
+  </script>
+</body>
+</html>
